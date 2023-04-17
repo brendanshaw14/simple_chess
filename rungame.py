@@ -1,3 +1,4 @@
-from chess import * 
+from board import * 
 
-game = chess()
+#create an instance of the board (run the game)
+game = board()

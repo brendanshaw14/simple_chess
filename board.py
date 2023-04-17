@@ -1,9 +1,15 @@
 import tkinter as tk
 from PIL import Image, ImageTk
-from piece import piece
-#from move import move
+from piece import *
+from move import *
 
-
+# Board class for the simple chess game
+# Author: Brendan Shaw, April 2023
+#   The board class stores the chess board's parameters and piece values as class variables, 
+#   while the __init__ function initializes the game's variables, loads the canvas, and begins
+#   the event loop. The class imports the piece and move classes- piece.py and move.py. 
+# The game currently implements all piece movement correctly excluding castling and pawn promotion, 
+# which will be added next, along with the minimax algorithm and move generation components.  
 
 class board:
     # Create a dictionary of color codes for the board board squares
@@ -22,7 +28,8 @@ class board:
     ROOK_VALUE = 50
     QUEEN_VALUE = 90 
     KING_VALUE = 900
-   
+  
+    #creates the canvas and initializes main variables, starts the event loop
     def __init__(self):
         # Create the main window
         root = tk.Tk()
@@ -144,7 +151,7 @@ class board:
                 print("move to " + click_position + " attempted")
                 #if a new spot was selected
                 #verify that move was valid
-                possibleMoves = self.getMoves(self.piece_selected)
+                possibleMoves = self.piece_selected.getMoves(self.piece_selected, self.board_dict)
                 print("possible moves received by the handle function:")
                 print(possibleMoves)
                 if possibleMoves is not None:  
@@ -187,306 +194,5 @@ class board:
         self.board_dict[piece.position] = None
         self.piece_set.remove(piece)
 
-    #returns the translated square relative to the input position and the movement parameters, None if invalid move. 
-    def getTranslation(self, current_pos, move_x, move_y):
-        new_x = ord(current_pos[0]) - ord('a') + move_x + 1
-        new_y = int(current_pos[1]) + move_y
-        if (new_x) < 1 or (new_x) > 8:
-            return None
-        elif (new_y) < 1 or (new_y) > 8:
-            return None 
-        else: 
-            return chr(ord('a') + new_x - 1) + str(new_y)
 
-    #retreives the possible moves of a piece
-    def getMoves(self, piece): 
-        possibleMoves = None
-        print(piece.name)
-        #get moves if it's a pawn
-        if piece.name == "new_pawn" or piece.name == "pawn":
-            possibleMoves = self.pawnMoves(piece)
-        #get moves if it's a knight
-        if piece.name == "knight":
-            possibleMoves = self.knightMoves(piece) 
-        #get moves if it's a bishop
-        if piece.name == "bishop":
-            possibleMoves = self.bishopMoves(piece) 
-        #get moves if it's a bishop
-        if piece.name == "rook":
-            possibleMoves = self.rookMoves(piece) 
-        #get moves if it's a queen
-        if piece.name == "queen":
-            possibleMoves = self.queenMoves(piece)
-        #get moves if it's a king
-        if piece.name == "king":
-            possibleMoves = self.kingMoves(piece)
-        return possibleMoves 
-
-    #returns the set of possible moves for the given pawn        
-    def pawnMoves(self, piece):
-        possibleMoves = set()
-        if piece.color == "white":
-            #get the translations
-            forward = self.getTranslation(piece.position, 0, -1)
-            forward_2 = self.getTranslation(piece.position, 0, -2)
-            diag_right = self.getTranslation(piece.position, 1, -1) 
-            diag_left = self.getTranslation(piece.position, -1, -1) 
-        else:
-            #get the translations
-            forward = self.getTranslation(piece.position, 0, 1)
-            forward_2 = self.getTranslation(piece.position, 0, 2)
-            diag_right = self.getTranslation(piece.position, 1, 1) 
-            diag_left = self.getTranslation(piece.position, -1, 1) 
-        #check forward1 
-        if forward in self.board_dict and self.board_dict[forward] is None:
-            possibleMoves.add(forward)
-        if piece.name == "new_pawn":
-            #check forward_2 
-            if forward_2 in self.board_dict and self.board_dict[forward_2] is None:
-                possibleMoves.add(forward_2)
-        #check diag_right
-        if diag_right in self.board_dict and self.board_dict[diag_right] is not None: 
-            if self.board_dict[diag_right].color != piece.color:
-                possibleMoves.add(diag_right)
-        #check diag_left
-        if diag_left in self.board_dict and self.board_dict[diag_left] is not None:  
-            if self.board_dict[diag_left].color != piece.color:
-                possibleMoves.add(diag_left)
-        return possibleMoves
-
-    #returns the set of possible moves for the given knight 
-    def knightMoves(self, piece): 
-        possible_moves = set()
-        translations = set()
-        #loop through the translations
-        for i in range(-2, 3):
-            if i == 2 or i == -2: 
-                translations.add(self.getTranslation(piece.position, i, 1))
-                translations.add(self.getTranslation(piece.position, i, -1))
-            if i == 1 or i == -1: 
-                translations.add(self.getTranslation(piece.position, i, 2))
-                translations.add(self.getTranslation(piece.position, i, -2))
-        print(translations)
-        for move in translations:
-            if move in self.board_dict:
-                if self.board_dict[move] is None:
-                    possible_moves.add(move)
-                if self.board_dict[move] is not None and self.board_dict[move].color != piece.color:
-                    possible_moves.add(move)
-        return possible_moves
-
-    #returns the set of possible moves for the given bishop
-    def bishopMoves(self, piece):
-        possible_moves = set()
-        #up right moves
-        for i in range(1, 9):
-            translation = self.getTranslation(piece.position, i, i)
-            print("testing translation: " + str(translation))
-            #don't add if not a valid square
-            if translation not in self.board_dict:
-                break
-            #if a piece is there already
-            elif self.board_dict[translation] is not None: 
-                #if the color is the same, break.
-                if self.board_dict[translation].color == piece.color:
-                    break
-                #if the color is different, allow move but break
-                else: 
-                    possible_moves.add(translation)
-                    break
-            #if the squre is empty
-            else: 
-                possible_moves.add(translation)
-        #down right moves
-        for i in range(1, 9):
-            translation = self.getTranslation(piece.position, i, -i)
-            print("testing translation: " + str(translation))
-            #don't add if not a valid square
-            if translation not in self.board_dict:
-                break
-            #if a piece is there already
-            elif self.board_dict[translation] is not None: 
-                #if the color is the same, break.
-                if self.board_dict[translation].color == piece.color:
-                    break
-                #if the color is different, allow move but break
-                else: 
-                    possible_moves.add(translation)
-                    break
-            #if the squre is empty
-            else: 
-                possible_moves.add(translation)
-        #down left moves
-        for i in range(1, 9):
-            translation = self.getTranslation(piece.position, -i, i)
-            print("testing translation: " + str(translation))
-            #don't add if not a valid square
-            if translation not in self.board_dict:
-                break
-            #if a piece is there already
-            elif self.board_dict[translation] is not None: 
-                #if the color is the same, break.
-                if self.board_dict[translation].color == piece.color:
-                    break
-                #if the color is different, allow move but break
-                else: 
-                    possible_moves.add(translation)
-                    break
-            #if the squre is empty
-            else:
-                possible_moves.add(translation)
-        #up left moves
-        for i in range(1, 9):
-            translation = self.getTranslation(piece.position, -i, -i)
-            print("testing translation: " + str(translation))
-            #don't add if not a valid square
-            if translation not in self.board_dict:
-                print("not in the board dict")
-                break
-            #if a piece is there already
-            elif self.board_dict[translation] is not None: 
-                print("found somethingin the square")
-                #if the color is the same, break.
-                if self.board_dict[translation].color == piece.color:
-                    break
-                #if the color is different, allow move but break
-                else: 
-                    possible_moves.add(translation)
-                    break
-            #if the squre is empty
-            else: 
-                print("adding up left move")
-                possible_moves.add(translation)
-        print("printing possible moves from bishop function")
-        print(possible_moves)
-        return possible_moves
     
-    #returns the set of possible moves for the given rook                            
-    def rookMoves(self, piece):
-        possible_moves = set()
-        print(self.board_dict)
-        #down moves
-        for i in range(1, 9):
-            translation = self.getTranslation(piece.position, 0, -i)
-            print("testing translation: " + str(translation))
-            #don't add if not a valid square
-            if translation not in self.board_dict:
-                break
-            #if a piece is there already
-            elif self.board_dict[translation] is not None: 
-                #if the color is the same, break.
-                if self.board_dict[translation].color == piece.color:
-                    break
-                #if the color is different, allow move but break
-                else: 
-                    possible_moves.add(translation)
-                    break
-            #if the squre is empty
-            else: 
-                possible_moves.add(translation)
-        #down moves
-        for i in range(1, 9):
-            translation = self.getTranslation(piece.position, 0, i)
-            print("testing translation: " + str(translation))
-            #don't add if not a valid square
-            if translation not in self.board_dict:
-                break
-            #if a piece is there already
-            elif self.board_dict[translation] is not None: 
-                #if the color is the same, break.
-                if self.board_dict[translation].color == piece.color:
-                    break
-                #if the color is different, allow move but break
-                else: 
-                    possible_moves.add(translation)
-                    break
-            #if the squre is empty
-            else: 
-                possible_moves.add(translation)
-        #left moves
-        for i in range(1, 9):
-            translation = self.getTranslation(piece.position, -i, 0)
-            print("testing translation: " + str(translation))
-            #don't add if not a valid square
-            if translation not in self.board_dict:
-                break
-            #if a piece is there already
-            elif self.board_dict[translation] is not None: 
-                #if the color is the same, break.
-                if self.board_dict[translation].color == piece.color:
-                    break
-                #if the color is different, allow move but break
-                else: 
-                    possible_moves.add(translation)
-                    break
-            #if the squre is empty
-            else:
-                possible_moves.add(translation)
-        #right moves
-        for i in range(1, 9):
-            translation = self.getTranslation(piece.position, i, 0)
-            print("testing translation: " + str(translation))
-            #don't add if not a valid square
-            if translation not in self.board_dict:
-                print("not in the board dict")
-                break
-            #if a piece is there already
-            elif self.board_dict[translation] is not None: 
-                print("found somethingin the square")
-                #if the color is the same, break.
-                if self.board_dict[translation].color == piece.color:
-                    break
-                #if the color is different, allow move but break
-                else: 
-                    possible_moves.add(translation)
-                    break
-            #if the squre is empty
-            else: 
-                print("adding up left move")
-                possible_moves.add(translation)
-        print("printing possible moves from bishop function")
-        print(possible_moves)
-        return possible_moves 
-
-    #returns the set of possible moves for the given queen 
-    def queenMoves(self, piece):
-        return self.bishopMoves(piece) | self.rookMoves(piece)
-
-    #returns the set of possible moves for the given king
-    def kingMoves(self, piece): 
-        translations = set()
-        possible_moves = set()
-        #get all the one square moves
-        translations.add(self.getTranslation(piece.position, -1, -1))
-        translations.add(self.getTranslation(piece.position, -1, 0))
-        translations.add(self.getTranslation(piece.position, -1, 1))
-        translations.add(self.getTranslation(piece.position, 1, -1))
-        translations.add(self.getTranslation(piece.position, 1, 0))
-        translations.add(self.getTranslation(piece.position, 1, 1))
-        translations.add(self.getTranslation(piece.position, 0, -1))
-        translations.add(self.getTranslation(piece.position, 0, 1))
-        #validate the moves
-        print(translations)
-        for move in translations:
-            print("testing move: " + str(move))
-            if move in self.board_dict:
-                if self.board_dict[move] is None:
-                    possible_moves.add(move)
-                if self.board_dict[move] is not None and self.board_dict[move].color != piece.color:
-                    possible_moves.add(move)
-        return possible_moves
-
-
-game = board()
-    
-
-###animates the piece movement
-##def animateMove(piece, new_position):
-    ##change_x = SQUARE_SIZE * (convertX(new_position[0]) - convertX(piece.position[0]))
-    ##change_y = SQUARE_SIZE * int(new_position[1]) - int(piece.position[1])
-    ##step_x = change_x/animation_speed
-    ##step_y = change_y/animation_speed
-    ##def animateHelper(piece):
-        ##canvas.move(piece.image, step_x, step_y)
-        ##canvas.after(50, animateHelper(piece))
-    ##animateHelper(piece)
