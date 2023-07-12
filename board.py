@@ -1,7 +1,7 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 from piece import *
-from move import *
+from move_node import *
 
 # Board class for the simple chess game
 # Author: Brendan Shaw, April 2023
@@ -128,6 +128,7 @@ class board:
         return ord(old_x) - ord('a') + 1 
 
     #handles the left click 
+    
     def handleLeftClick(self, event):
         #find the position that was clicked
         mouse_x = event.x
@@ -136,35 +137,33 @@ class board:
         #if there was no piece selected, select the current piece
         if self.piece_selected is None and self.board_dict[click_position] is not None:
             #check if the right color is being selected
-            print(self.turn)
-            if self.turn == self.board_dict[click_position].color: 
+            if self.turn == "white":
                 #set piece_selected to the piece at the position clicked on the board
                 self.piece_selected = self.board_dict[click_position]
-            
-                print("piece was selected: position " + click_position)
         else: 
             #if the same piece was clicked twice, unselect the piece
             if self.piece_selected == self.board_dict[click_position]:
                 self.piece_selected = None
-                print("piece was unselected")
             else: 
-                print("move to " + click_position + " attempted")
                 #if a new spot was selected
                 #verify that move was valid
                 possibleMoves = self.piece_selected.getMoves(self.piece_selected, self.board_dict)
-                print("possible moves received by the handle function:")
-                print(possibleMoves)
                 if possibleMoves is not None:  
-                    print(possibleMoves)
                     for move in possibleMoves:
                         if move == click_position:
                             self.handleMove(self.piece_selected, click_position)
+                            node = move_node(None, None, self.piece_set, self.board_dict, "black", 0)
+                            next_move = node.minimax()
+                            self.handleMove(next_move.piece, next_move.position)
                             self.piece_selected = None
                             break
                     self.piece_selected = None
                 else: 
-                    print("here")
                     self.piece_selected = None
+                #get the next move
+                #node = move_node(None, None, self.piece_set, self.board_dict, "white", 0)
+                #print("Current Value:")
+                #print(move_node.getValue(node))
 
     #move helper function 
     def handleMove(self, piece_selected, click_position):
@@ -180,10 +179,8 @@ class board:
         self.board_dict[click_position] = piece_selected
         #redraw the board
         if self.turn == "white":
-            print("turn changed to black")
             self.turn = "black"
         else: 
-            print("turn changed to white")
             self.turn = "white"
         #update board
         self.drawBoard()
@@ -195,4 +192,5 @@ class board:
         self.piece_set.remove(piece)
 
 
+game = board()
     

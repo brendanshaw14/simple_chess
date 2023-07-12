@@ -27,7 +27,6 @@ class piece:
     #retreives the possible moves of a piece
     def getMoves(self, piece, board_dict): 
         possibleMoves = None
-        print(piece.name)
         #get moves if it's a pawn
         if piece.name == "new_pawn" or piece.name == "pawn":
             possibleMoves = self.pawnMoves(piece, board_dict)
@@ -92,7 +91,6 @@ class piece:
             if i == 1 or i == -1: 
                 translations.add(self.getTranslation(piece.position, i, 2))
                 translations.add(self.getTranslation(piece.position, i, -2))
-        print(translations)
         for move in translations:
             if move in board_dict:
                 if board_dict[move] is None:
@@ -107,7 +105,6 @@ class piece:
         #up right moves
         for i in range(1, 9):
             translation = self.getTranslation(piece.position, i, i)
-            print("testing translation: " + str(translation))
             #don't add if not a valid square
             if translation not in board_dict:
                 break
@@ -126,7 +123,6 @@ class piece:
         #down right moves
         for i in range(1, 9):
             translation = self.getTranslation(piece.position, i, -i)
-            print("testing translation: " + str(translation))
             #don't add if not a valid square
             if translation not in board_dict:
                 break
@@ -145,7 +141,6 @@ class piece:
         #down left moves
         for i in range(1, 9):
             translation = self.getTranslation(piece.position, -i, i)
-            print("testing translation: " + str(translation))
             #don't add if not a valid square
             if translation not in board_dict:
                 break
@@ -164,14 +159,11 @@ class piece:
         #up left moves
         for i in range(1, 9):
             translation = self.getTranslation(piece.position, -i, -i)
-            print("testing translation: " + str(translation))
             #don't add if not a valid square
             if translation not in board_dict:
-                print("not in the board dict")
                 break
             #if a piece is there already
             elif board_dict[translation] is not None: 
-                print("found somethingin the square")
                 #if the color is the same, break.
                 if board_dict[translation].color == piece.color:
                     break
@@ -181,10 +173,7 @@ class piece:
                     break
             #if the squre is empty
             else: 
-                print("adding up left move")
                 possible_moves.add(translation)
-        print("printing possible moves from bishop function")
-        print(possible_moves)
         return possible_moves
     
     #returns the set of possible moves for the given rook                            
@@ -193,7 +182,6 @@ class piece:
         #down moves
         for i in range(1, 9):
             translation = self.getTranslation(piece.position, 0, -i)
-            print("testing translation: " + str(translation))
             #don't add if not a valid square
             if translation not in board_dict:
                 break
@@ -212,7 +200,6 @@ class piece:
         #down moves
         for i in range(1, 9):
             translation = self.getTranslation(piece.position, 0, i)
-            print("testing translation: " + str(translation))
             #don't add if not a valid square
             if translation not in board_dict:
                 break
@@ -231,7 +218,6 @@ class piece:
         #left moves
         for i in range(1, 9):
             translation = self.getTranslation(piece.position, -i, 0)
-            print("testing translation: " + str(translation))
             #don't add if not a valid square
             if translation not in board_dict:
                 break
@@ -250,14 +236,11 @@ class piece:
         #right moves
         for i in range(1, 9):
             translation = self.getTranslation(piece.position, i, 0)
-            print("testing translation: " + str(translation))
             #don't add if not a valid square
             if translation not in board_dict:
-                print("not in the board dict")
                 break
             #if a piece is there already
             elif board_dict[translation] is not None: 
-                print("found somethingin the square")
                 #if the color is the same, break.
                 if board_dict[translation].color == piece.color:
                     break
@@ -267,10 +250,7 @@ class piece:
                     break
             #if the squre is empty
             else: 
-                print("adding up left move")
                 possible_moves.add(translation)
-        print("printing possible moves from bishop function")
-        print(possible_moves)
         return possible_moves 
 
     #returns the set of possible moves for the given queen 
@@ -291,9 +271,7 @@ class piece:
         translations.add(self.getTranslation(piece.position, 0, -1))
         translations.add(self.getTranslation(piece.position, 0, 1))
         #validate the moves
-        print(translations)
         for move in translations:
-            print("testing move: " + str(move))
             if move in board_dict:
                 if board_dict[move] is None:
                     possible_moves.add(move)
